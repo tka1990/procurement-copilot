@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Procurement Copilot (Live-Connected)</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f8f8f8; margin: 40px; }
+    .container { background: white; padding: 20px; max-width: 700px; margin: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input[type=text], input[type=number] { width: 100%; padding: 10px; margin-top: 10px; }
+    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+    table, th, td { border: 1px solid #ddd; }
+    th, td { padding: 10px; text-align: left; }
+    .btn { margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+    .btn:disabled { background: #ccc; }
+    img { max-width: 100px; }
+    .source-note { font-size: 12px; color: #666; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>AI Procurement Copilot (Live)</h2>
+    <p>Paste a product link from Shopee, Lazada, or IKEA:</p>
+    <input type="text" id="productLink" placeholder="https://shopee.com.my/sample-product">
+    <button class="btn" onclick="fetchProduct()">Fetch Product Info</button>
+
+    <div id="productInfo" style="display:none;">
+      <h3>Product Details</h3>
+      <img id="productImage" src="" alt="Product image">
+      <p><strong>Description:</strong> <span id="productDesc"></span></p>
+      <p><strong>Price:</strong> RM <span id="productPrice"></span></p>
+      <label>Quantity:</label>
+      <input type="number" id="productQty" value="1" min="1">
+
+      <h3>Comparison Options</h3>
+      <table>
+        <tr><th>Vendor</th><th>Price (RM)</th><th>Link</th></tr>
+        <tr><td>Shopee</td><td>28.90</td><td><a href="#" target="_blank">View</a></td></tr>
+        <tr><td>Lazada</td><td>29.50</td><td><a href="#" target="_blank">View</a></td></tr>
+      </table>
+
+      <button class="btn" onclick="addToCart()">Add to Cart</button>
+    </div>
+
+    <div id="cart" style="display:none; margin-top:40px;">
+      <h3>Cart</h3>
+      <p><strong>Item:</strong> <span id="cartDesc"></span> (x<span id="cartQty"></span>)</p>
+      <p><strong>Total Price:</strong> RM <span id="cartTotal"></span></p>
+      <p class="source-note">*Live data via Flask API running locally.</p>
+    </div>
+  </div>
+
+  <script>
+    async function fetchProduct() {
+      const link = document.getElementById("productLink").value;
+      const response = await fetch("https://your-backend-url.onrender.com/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ link })
+      });
+
+      if (!response.ok) {
+        alert("Product not found or unsupported link.");
+        return;
+      }
+
+      const data = await response.json();
+      document.getElementById("productImage").src = data.image;
+      document.getElementById("productDesc").innerText = data.title;
+      document.getElementById("productPrice").innerText = data.price;
+      document.getElementById("productInfo").style.display = "block";
+    }
+
+    function addToCart() {
+      let qty = parseInt(document.getElementById("productQty").value);
+      let price = parseFloat(document.getElementById("productPrice").innerText);
+      let desc = document.getElementById("productDesc").innerText;
+      document.getElementById("cartDesc").innerText = desc;
+      document.getElementById("cartQty").innerText = qty;
+      document.getElementById("cartTotal").innerText = (qty * price).toFixed(2);
+      document.getElementById("cart").style.display = "block";
+    }
+  </script>
+</body>
+</html>
